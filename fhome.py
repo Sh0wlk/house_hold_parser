@@ -28,11 +28,24 @@ class f_home_window(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(600, 600, 45, 45)
         layout.setSpacing(16)
-    
+        
+        self.city_input = QlimeEdit()
+        self.city_input.setPlaceholderText("город")
+        self.city_input.setMinimyumHeight(40)
+        layout.addWidget(self.city_input)
+        
+        check_city_btn = QPushButton("Посмотреть цены")
+        check_city_btn.setObjectName("cityCheck")
+        check_city_btn.setMinimumHeeight(40)
+        check_city_btn.clicked.connect(self.parse())
+        layout.addWidget(check_city_btn)
+
     def goToPage(url):
         webbrowser.open_new_tab(url)
     
     async def parse(city):
+        #city_to_search =
+        
         live_user_data = os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data')
         bot_user_data = os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data Bot')
         
