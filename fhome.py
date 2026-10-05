@@ -17,6 +17,7 @@ import asyncio as asy
 import os
 from re import finditer
 import shutil
+from qasync import QEventLoop, asyncSlot 
 
 cost_pat = ""
 link_pat = ""
@@ -37,12 +38,13 @@ class f_home_window(QWidget):
         check_city_btn = QPushButton("Посмотреть цены")
         check_city_btn.setObjectName("cityCheck")
         check_city_btn.setMinimumHeight(40)
-        check_city_btn.clicked.connect(asy.run(self.parse()))
+        check_city_btn.clicked.connect(self.parse)
         layout.addWidget(check_city_btn)
 
-    def goToPage(url):
+    def goToPage(self, url):
         webbrowser.open_new_tab(url)
     
+    @asyncSlot()
     async def parse(self):
         city_to_search = self.city_input.text().strip()
         
@@ -73,7 +75,7 @@ class f_home_window(QWidget):
             sandbox = False
         )
         
-        url = f"https://www.avito.ru/moskva?localPriority=0&q={cъем}+{city_to_search}"
+        url = f"https://www.avito.ru/moskva?localPriority=0&q=cъем+{city_to_search}"
         
         page = await browser.get(url)
         await page.sleep(1)
@@ -85,14 +87,19 @@ class f_home_window(QWidget):
         for i in finditer(link_pat,htmll):
             m[z].append([i.group()])
             z+=1
-        arr(m)
-        browser.stop()
+        self.arr(m)
+        await browser.stop()
     
-    def arr(args):
+    def arr(self, args):
         print(args)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    
+    loop = QEventLoop(app)
+    asy.set_event_loop(loop)
     controller = f_home_window()
+    
     controller.show()
-    sys.exit(app.exec())
+    with loop:
+        loop.run_forever()
