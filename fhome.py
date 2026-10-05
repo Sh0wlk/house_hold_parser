@@ -19,8 +19,8 @@ from re import finditer
 import shutil
 from qasync import QEventLoop, asyncSlot 
 
-cost_pat = ""
-link_pat = ""
+cost_pat = pattern = r'<span[^>]*class="[^"]*size_1_dense[^"]*".*?"([^"]+)"'
+link_pat = pattern = r'<a[^>]*data-marker="item-photo-sliderLink"[^>]*href="([^"]+)"'
 
 class f_home_window(QWidget):
     def __init__(self):
@@ -78,16 +78,24 @@ class f_home_window(QWidget):
         url = f"https://www.avito.ru/moskva?localPriority=0&q=cъем+{city_to_search}"
         
         page = await browser.get(url)
-        await page.sleep(1)
+        await page.sleep(15)
         htmll = await page.get_content()
         m = []
-        z = 0
-        for i in finditer(cost_pat,htmll):
-            m.append([i.group()])
-        for i in finditer(link_pat,htmll):
-            m[z].append([i.group()])
-            z+=1
-        self.arr(m)
+        
+        try:
+            items = await page.select_all('div[data-marker="item"]')
+            for item in items:
+                try:
+                    price_element = await item.select('span[data-marker="item-price-value"]')
+                    link_element = await item.select('a[class="sliderLink-"]')
+                    
+                    link = link_element.text.strip() if link_element else "XDDDD"
+                    price = price_element.text.strip() if price_element else "XD"
+                    m.append([price,link])
+                except Exception as it_error:
+                    continue
+        except Exception as e:
+            print(f"sinisterrrrr: {e}")
         await browser.stop()
     
     def arr(self, args):
