@@ -11,7 +11,7 @@ from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 #from psycopg2.extras import RealDictCursor
 
 import webbrowser
-import requests
+#import requests
 import nodriver as nd
 import asyncio as asy
 import os
@@ -29,22 +29,22 @@ class f_home_window(QWidget):
         layout.setContentsMargins(600, 600, 45, 45)
         layout.setSpacing(16)
         
-        self.city_input = QlimeEdit()
+        self.city_input = QLineEdit()
         self.city_input.setPlaceholderText("город")
-        self.city_input.setMinimyumHeight(40)
+        self.city_input.setMinimumHeight(40)
         layout.addWidget(self.city_input)
         
         check_city_btn = QPushButton("Посмотреть цены")
         check_city_btn.setObjectName("cityCheck")
-        check_city_btn.setMinimumHeeight(40)
-        check_city_btn.clicked.connect(self.parse())
+        check_city_btn.setMinimumHeight(40)
+        check_city_btn.clicked.connect(asy.run(self.parse()))
         layout.addWidget(check_city_btn)
 
     def goToPage(url):
         webbrowser.open_new_tab(url)
     
-    async def parse(city):
-        #city_to_search =
+    async def parse(self):
+        city_to_search = self.city_input.text().strip()
         
         live_user_data = os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data')
         bot_user_data = os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data Bot')
@@ -73,7 +73,9 @@ class f_home_window(QWidget):
             sandbox = False
         )
         
-        page = await browser.get(url.string)
+        url = f"https://www.avito.ru/moskva?localPriority=0&q={cъем}+{city_to_search}"
+        
+        page = await browser.get(url)
         await page.sleep(1)
         htmll = await page.get_content()
         m = []
@@ -86,7 +88,8 @@ class f_home_window(QWidget):
         arr(m)
         browser.stop()
     
-    #def arr(args):
+    def arr(args):
+        print(args)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
