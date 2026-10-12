@@ -81,19 +81,29 @@ class f_home_window(QWidget):
         await page.sleep(15)
         htmll = await page.get_content()
         m = []
-        с = 1
+        price_cm = ['><span data-marker="item-price-value"', '>от', '<#comment']
+        link_cm = ['a class="sliderLink-',"href=", 'target=']
         try:
             items = await page.select_all('div[data-marker="item"]')
             for item in items:
-                price = (str(item)[str(item).rfind('item-price-value')-20: str(item).rfind('item-price-value')+200])
-                link = (str(item)[str(item).rfind('class="sliderLink-')-20: str(item).rfind('class="sliderLink-')+200])
+                item = str(item)
+                print("penis")
+                price = item[item.find(price_cm[0]): item.find(price_cm[0])+200]; price = price[price.find(price_cm[1])+len(price_cm[1]): price.find(price_cm[2])]
+                link = item[item.find(link_cm[0]): len(item)]; link = link[link.find(link_cm[1])+len(link_cm[1]): link.find(link_cm[2])]
+                
+                m.append([price, link])
+                print("price) ", price)
+                print("///")
+                print("link) ", link)
+                print("///")
             self.arr(m)
         except Exception as e:
             print(f"sinisterrrrr: {e}")
         await browser.stop()
     
     def arr(self, args):
-        print(args)
+        #print(args)
+        pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
