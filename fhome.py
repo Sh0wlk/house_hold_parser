@@ -72,8 +72,8 @@ class f_home_window(QWidget):
         browser = await nd.start(
             user_data_dir = bot_user_data,
             headless = False,
-            sandbox = False
-        )
+            sandbox = False,
+            no_sandbox = True)
         
         url = f"https://www.avito.ru/moskva?localPriority=0&q=cъем+{city_to_search}"
         
@@ -81,19 +81,13 @@ class f_home_window(QWidget):
         await page.sleep(15)
         htmll = await page.get_content()
         m = []
-        
+        с = 1
         try:
             items = await page.select_all('div[data-marker="item"]')
             for item in items:
-                try:
-                    price_element = await item.select('span[data-marker="item-price-value"]')
-                    link_element = await item.select('a[class="sliderLink-"]')
-                    
-                    link = link_element.text.strip() if link_element else "XDDDD"
-                    price = price_element.text.strip() if price_element else "XD"
-                    m.append([price,link])
-                except Exception as it_error:
-                    continue
+                price = (str(item)[str(item).rfind('item-price-value')-20: str(item).rfind('item-price-value')+200])
+                link = (str(item)[str(item).rfind('class="sliderLink-')-20: str(item).rfind('class="sliderLink-')+200])
+            self.arr(m)
         except Exception as e:
             print(f"sinisterrrrr: {e}")
         await browser.stop()
