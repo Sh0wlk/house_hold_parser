@@ -19,11 +19,11 @@ from re import finditer
 import shutil
 from qasync import QEventLoop, asyncSlot 
 
-import prycopg2
+import psycopg2
 from psycopg2.extras import RealDictCursor
 
 DB = {
-    "dbname": "cur_prices",
+    "dbname": "my_local_db",
     "user": "postgres",
     "password": "gfnkstf12",
     "host": "127.0.0.1",
@@ -122,7 +122,7 @@ class f_home_window(QWidget):
                 item = str(item)
                 
                 price = item[item.find(price_cm[0])+1: item.find(price_cm[0])+200]; price = price[price.find(price_cm[1])+len(price_cm[1]): price.find(price_cm[2])]
-                price = int("".join(price.split(" ")))
+                price = int("".join(price.split()))
                 link = item[item.find(link_cm[0]): len(item)]; link = link[link.find(link_cm[1])+len(link_cm[1]): link.find(link_cm[2])]
                 c +=1
                 
