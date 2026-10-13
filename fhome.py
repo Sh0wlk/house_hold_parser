@@ -19,6 +19,33 @@ from re import finditer
 import shutil
 from qasync import QEventLoop, asyncSlot 
 
+import prycopg2
+from psycopg2.extras import RealDictCursor
+
+DB = {
+    "dbname": "cur_prices",
+    "user": "postgres",
+    "password": "gfnkstf12",
+    "host": "127.0.0.1",
+    "port": "5432"
+}
+def default_data():
+    try:
+        conn = psycopg2.connect(**DB)
+        conn.set_client_encoding('UTF8')
+        with conn.cursor() as cursor:
+            cursor,execute("""
+                DROP TABLE IF EXISTS offers;
+                CREATE TABLE IF NOT EXISTS offers (
+                    id SERIAL PRIMARY KEY,
+                    price INT
+                    link VARCHAR(256)
+                )
+                """)
+            conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Sinisterrr in DB) ", e)
 cost_pat = pattern = r'<span[^>]*class="[^"]*size_1_dense[^"]*".*?"([^"]+)"'
 link_pat = pattern = r'<a[^>]*data-marker="item-photo-sliderLink"[^>]*href="([^"]+)"'
 
@@ -44,6 +71,11 @@ class f_home_window(QWidget):
     def goToPage(self, url):
         webbrowser.open_new_tab(url)
     
+    def debugFunc(self,d1,d2):
+        print("price) ", d1)
+        print("///")
+        print("link) ", d2)
+        print("///")
     @asyncSlot()
     async def parse(self):
         city_to_search = self.city_input.text().strip()
@@ -85,24 +117,39 @@ class f_home_window(QWidget):
         link_cm = ['a class="sliderLink-',"href=", ' target=']
         try:
             items = await page.select_all('div[data-marker="item"]')
+            c=0
             for item in items:
                 item = str(item)
-                price = item[item.find(price_cm[0])+1: item.find(price_cm[0])+200]; price = price[price.find(price_cm[1])+len(price_cm[1]): price.find(price_cm[2])]
-                link = item[item.find(link_cm[0]): len(item)]; link = link[link.find(link_cm[1])+len(link_cm[1]): link.find(link_cm[2])]
                 
-                m.append([price, link])
-                print("price) ", price)
-                print("///")
-                print("link) ", link)
-                print("///")
-            self.arr(m)
+                price = item[item.find(price_cm[0])+1: item.find(price_cm[0])+200]; price = price[price.find(price_cm[1])+len(price_cm[1]): price.find(price_cm[2])]
+                price = int("".join(price.split(" ")))
+                link = item[item.find(link_cm[0]): len(item)]; link = link[link.find(link_cm[1])+len(link_cm[1]): link.find(link_cm[2])]
+                c +=1
+                
+                self.arr([c,price,link])
+            
+            #DEBUG FUNC
+            #debugFunc(price,link)
+            
+            self.analyze()
+            
         except Exception as e:
             print(f"sinisterrrrr: {e}")
         await browser.stop()
     
+    def analyze(self):
+        with psycopg2.connect(**DB) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """SELECT price, link FROM offers WHERE price <= AVG(price)/100*80"""
+                )
+    
     def arr(self, args):
-        #print(args)
-        pass
+        with psycopg2.connect(**DB) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """INSERT INTO offers (id, price, link) VALUES (%s, %s, %s);""",(args[0],args[1],args[2])
+                )
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
