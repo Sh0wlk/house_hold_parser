@@ -78,17 +78,16 @@ class f_home_window(QWidget):
         url = f"https://www.avito.ru/moskva?localPriority=0&q=cъем+{city_to_search}"
         
         page = await browser.get(url)
-        await page.sleep(15)
+        await page.sleep(10)
         htmll = await page.get_content()
         m = []
-        price_cm = ['><span data-marker="item-price-value"', '>от', '<#comment']
-        link_cm = ['a class="sliderLink-',"href=", 'target=']
+        price_cm = ['><span data-marker="item-price-value"', '>', '<#comment']
+        link_cm = ['a class="sliderLink-',"href=", ' target=']
         try:
             items = await page.select_all('div[data-marker="item"]')
             for item in items:
                 item = str(item)
-                print("penis")
-                price = item[item.find(price_cm[0]): item.find(price_cm[0])+200]; price = price[price.find(price_cm[1])+len(price_cm[1]): price.find(price_cm[2])]
+                price = item[item.find(price_cm[0])+1: item.find(price_cm[0])+200]; price = price[price.find(price_cm[1])+len(price_cm[1]): price.find(price_cm[2])]
                 link = item[item.find(link_cm[0]): len(item)]; link = link[link.find(link_cm[1])+len(link_cm[1]): link.find(link_cm[2])]
                 
                 m.append([price, link])
