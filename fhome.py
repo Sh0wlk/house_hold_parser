@@ -109,6 +109,7 @@ class f_home_window(QWidget):
         price_cm = ['><span data-marker="item-price-value"', '>', '<#comment']
         link_cm = ['a class="sliderLink-',"href=", '?']
         try:
+            s = 0
             items = await page.select_all('div[data-marker="item"]')
             c=0
             for item in items:
@@ -119,23 +120,25 @@ class f_home_window(QWidget):
                 if len(price)<15 and "от" not in price:
                     price = int("".join(price.split()))
                     c +=1
-            
+                    s += price
                     #DEBUG FUNC
-                    self.debugFunc(price,link)
+                    #self.debugFunc(price,link)
 
                     self.arr([c,price,link])
-            #self.analyze()
+            s//=c
+            self.analyze(s)
             
         except Exception as e:
             print(f"sinisterrrrr on html fuck: {e} and the er itself {link, price}")
         await browser.stop()
     
-    def analyze(self):
+    def analyze(self,s):
         with psycopg.connect(**DB) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    """SELECT price, link FROM offers WHERE price <= AVG(price)/100*80"""
+                    f"""SELECT price, link, {s} FROM offers WHERE price <= {s}/100*80"""
                 )
+                print(cursor.fetchall())
     
     def arr(self, args):
         with psycopg.connect(**DB) as conn:
